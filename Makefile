@@ -1,4 +1,4 @@
-.PHONY: setup test compare clean all activate .venv venv
+.PHONY: setup test compare clean all activate .venv venv tangle detangle
 
 all: setup test compare
 
@@ -34,6 +34,13 @@ clean:
 
 clean-venv:
 	rm -rf .venv
+
+# Org mode tangle/detangle targets
+tangle:
+	emacs --batch --eval "(require 'org)" --eval "(org-babel-tangle-file \"SETUP.org\")" --eval "(org-babel-tangle-file \"README.org\")"
+
+detangle:
+	@echo "Detangling org files not automated. Use Emacs command org-babel-detangle manually."
 
 framework-agno:
 	python -m agents.agno.run

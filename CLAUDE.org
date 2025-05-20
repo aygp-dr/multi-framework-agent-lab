@@ -11,6 +11,8 @@
 - Compare all :: =make compare= or =python -m evaluation.compare_all=
 - Clean project :: =make clean= for artifacts, =make clean-venv= to remove virtual environment
 - Setup :: =make setup= (creates venv and installs deps) or =uv pip install -r requirements.txt=
+- Org tangle :: =make tangle= extracts code blocks from org files
+- Org detangle :: Manual process using Emacs org-babel-detangle function
 
 * Code Style Guidelines
 - Imports :: Use absolute imports, group (stdlib, third-party, local) with a blank line between groups
@@ -23,3 +25,4 @@
 - Tools :: Use common tool implementations from common/tools.py
 - LLM calls :: Use the wrapper in common/llm.py for consistency across frameworks
 - Use Org mode with Babel for documentation and literate programming
+- Org files :: Use =:tangle yes= property for code blocks to extract with make tangle
