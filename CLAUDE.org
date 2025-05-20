@@ -1,0 +1,24 @@
+#+TITLE: Claude Code Guidelines
+#+AUTHOR: aygp-dr
+#+DATE: 2025-05-20
+#+PROPERTY: header-args :mkdirp yes :session *Python* :results output
+
+* Build/Test/Lint Commands
+- Run agent :: =make framework-{framework_name}= or =python -m agents.{framework_name}.run=
+- Test all :: =make test= or =pytest tests/=
+- Test single :: =pytest tests/test_file.py::test_function=
+- Compare all :: =make compare= or =python -m evaluation.compare_all=
+- Clean project :: =make clean=
+- Setup :: =make setup= or =pip install -r requirements.txt=
+
+* Code Style Guidelines
+- Imports :: Use absolute imports, group (stdlib, third-party, local) with a blank line between groups
+- Formatting :: Follow PEP 8, use 4-space indentation
+- Types :: Use type hints for function parameters and return values (Pydantic models preferred)
+- Naming :: snake_case for variables/functions, PascalCase for classes
+- Error handling :: Use specific exception types, avoid bare excepts
+- Documentation :: Use docstrings for modules, classes, and functions (Google style)
+- Framework implementation :: Follow BaseAgent interface in agents/base_agent.py
+- Tools :: Use common tool implementations from common/tools.py
+- LLM calls :: Use the wrapper in common/llm.py for consistency across frameworks
+- Use Org mode with Babel for documentation and literate programming
