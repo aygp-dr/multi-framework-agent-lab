@@ -19,10 +19,12 @@ The Makefile uses file-level dependencies to manage the build process:
 - =README.md= is generated from =README.org= and is gitignored
 - =.venv= depends on =README.md= and =pyproject.toml=
 - All framework targets depend on =.venv=
-- All commands that need Python automatically activate the venv
+- =PYTHON= variable automatically activates venv and uses =uv run python=
+- All commands that use Python use the =PYTHON= variable
 
 * Code Style Guidelines
 - Python version :: 3.11 (specified in pyproject.toml)
+- Python execution :: Use =uv run python= via the =PYTHON= Makefile variable
 - Imports :: Use absolute imports, group (stdlib, third-party, local) with a blank line between groups
 - Formatting :: Follow PEP 8, use 4-space indentation
 - Types :: Use type hints for function parameters and return values (Pydantic models preferred)

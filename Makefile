@@ -1,5 +1,8 @@
 .PHONY: setup test compare clean all activate venv tangle detangle setup-dev
 
+# Define PYTHON command to activate venv and run python
+PYTHON=@. .venv/bin/activate && uv run python
+
 all: setup test compare
 
 # File-level dependency: README.md depends on README.org
@@ -29,10 +32,10 @@ setup-dev: .venv
 	@. .venv/bin/activate && uv pip install -e ".[dev,all]"
 
 test: .venv
-	@. .venv/bin/activate && pytest tests/
+	$(PYTHON) -m pytest tests/
 
 compare: .venv
-	@. .venv/bin/activate && python -m evaluation.compare_all
+	$(PYTHON) -m evaluation.compare_all
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -60,28 +63,28 @@ detangle:
 
 # Framework targets - all depend on having a virtual environment
 framework-agno: .venv
-	@. .venv/bin/activate && python -m agents.agno.run
+	$(PYTHON) -m agents.agno.run
 
 framework-dspy: .venv
-	@. .venv/bin/activate && python -m agents.dspy.run
+	$(PYTHON) -m agents.dspy.run
 
 framework-google-adk: .venv
-	@. .venv/bin/activate && python -m agents.google_adk.run
+	$(PYTHON) -m agents.google_adk.run
 
 framework-inspect-ai: .venv
-	@. .venv/bin/activate && python -m agents.inspect_ai.run
+	$(PYTHON) -m agents.inspect_ai.run
 
 framework-langgraph-functional: .venv
-	@. .venv/bin/activate && python -m agents.langgraph_functional.run
+	$(PYTHON) -m agents.langgraph_functional.run
 
 framework-langgraph-high-level: .venv
-	@. .venv/bin/activate && python -m agents.langgraph_high_level.run
+	$(PYTHON) -m agents.langgraph_high_level.run
 
 framework-pydantic-ai: .venv
-	@. .venv/bin/activate && python -m agents.pydantic_ai.run
+	$(PYTHON) -m agents.pydantic_ai.run
 
 framework-smolagents: .venv
-	@. .venv/bin/activate && python -m agents.smolagents.run
+	$(PYTHON) -m agents.smolagents.run
 
 framework-no-framework: .venv
-	@. .venv/bin/activate && python -m agents.no_framework.run
+	$(PYTHON) -m agents.no_framework.run
