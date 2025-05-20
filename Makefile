@@ -1,9 +1,17 @@
-.PHONY: setup test compare clean all activate .venv venv tangle detangle
+.PHONY: setup test compare clean all activate venv tangle detangle setup-dev
 
 all: setup test compare
 
-.venv:
-	uv venv
+# File-level dependency: README.md depends on README.org
+README.md: README.org
+	@echo "Converting README.org to README.md..."
+	@emacs --batch --eval "(require 'ox-md)" --eval "(find-file \"README.org\")" --eval "(org-md-export-to-markdown)" --kill
+
+# File-level dependency: .venv depends on README.md and pyproject.toml
+.venv: README.md pyproject.toml
+	@echo "Creating virtual environment with uv..."
+	@uv venv
+	@touch .venv
 
 venv: .venv
 
@@ -11,14 +19,20 @@ activate: .venv
 	@echo "To activate the virtual environment, run:"
 	@echo "source .venv/bin/activate"
 
+# Setup now depends on the .venv which depends on README.md
 setup: .venv
-	uv pip install -r requirements.txt
+	@echo "Installing dependencies from pyproject.toml..."
+	@. .venv/bin/activate && uv pip install -e .
 
-test:
-	pytest tests/
+setup-dev: .venv
+	@echo "Installing development dependencies..."
+	@. .venv/bin/activate && uv pip install -e ".[dev,all]"
 
-compare:
-	python -m evaluation.compare_all
+test: .venv
+	@. .venv/bin/activate && pytest tests/
+
+compare: .venv
+	@. .venv/bin/activate && python -m evaluation.compare_all
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -31,40 +45,43 @@ clean:
 	find . -type d -name "dist" -exec rm -rf {} +
 	find . -type d -name "build" -exec rm -rf {} +
 	find . -type d -name "*.egg-info" -exec rm -rf {} +
+	rm -f README.md
 
 clean-venv:
 	rm -rf .venv
 
 # Org mode tangle/detangle targets
-tangle:
-	emacs --batch --eval "(require 'org)" --eval "(org-babel-tangle-file \"SETUP.org\")" --eval "(org-babel-tangle-file \"README.org\")"
+tangle: README.org SETUP.org
+	@echo "Tangling org files..."
+	@emacs --batch --eval "(require 'org)" --eval "(org-babel-tangle-file \"SETUP.org\")" --eval "(org-babel-tangle-file \"README.org\")"
 
 detangle:
 	@echo "Detangling org files not automated. Use Emacs command org-babel-detangle manually."
 
-framework-agno:
-	python -m agents.agno.run
+# Framework targets - all depend on having a virtual environment
+framework-agno: .venv
+	@. .venv/bin/activate && python -m agents.agno.run
 
-framework-dspy:
-	python -m agents.dspy.run
+framework-dspy: .venv
+	@. .venv/bin/activate && python -m agents.dspy.run
 
-framework-google-adk:
-	python -m agents.google_adk.run
+framework-google-adk: .venv
+	@. .venv/bin/activate && python -m agents.google_adk.run
 
-framework-inspect-ai:
-	python -m agents.inspect_ai.run
+framework-inspect-ai: .venv
+	@. .venv/bin/activate && python -m agents.inspect_ai.run
 
-framework-langgraph-functional:
-	python -m agents.langgraph_functional.run
+framework-langgraph-functional: .venv
+	@. .venv/bin/activate && python -m agents.langgraph_functional.run
 
-framework-langgraph-high-level:
-	python -m agents.langgraph_high_level.run
+framework-langgraph-high-level: .venv
+	@. .venv/bin/activate && python -m agents.langgraph_high_level.run
 
-framework-pydantic-ai:
-	python -m agents.pydantic_ai.run
+framework-pydantic-ai: .venv
+	@. .venv/bin/activate && python -m agents.pydantic_ai.run
 
-framework-smolagents:
-	python -m agents.smolagents.run
+framework-smolagents: .venv
+	@. .venv/bin/activate && python -m agents.smolagents.run
 
-framework-no-framework:
-	python -m agents.no_framework.run
+framework-no-framework: .venv
+	@. .venv/bin/activate && python -m agents.no_framework.run

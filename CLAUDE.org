@@ -4,17 +4,25 @@
 #+PROPERTY: header-args :mkdirp yes :session *Python* :results output
 
 * Build/Test/Lint Commands
-- Virtual env :: =make .venv= creates environment, =make activate= shows activation command
-- Run agent :: =make framework-{framework_name}= or =python -m agents.{framework_name}.run=
-- Test all :: =make test= or =pytest tests/=
-- Test single :: =pytest tests/test_file.py::test_function=
-- Compare all :: =make compare= or =python -m evaluation.compare_all=
-- Clean project :: =make clean= for artifacts, =make clean-venv= to remove virtual environment
-- Setup :: =make setup= (creates venv and installs deps) or =uv pip install -r requirements.txt=
+- Virtual env :: =make .venv= creates environment with dependencies from pyproject.toml
+- Dev setup :: =make setup-dev= installs all dependencies including dev tools and all frameworks
+- Run agent :: =make framework-{framework_name}= automatically activates venv and runs agent
+- Test all :: =make test= automatically activates venv and runs tests
+- Test single :: =pytest tests/test_file.py::test_function= (with activated venv)
+- Compare all :: =make compare= runs all framework implementations and compares them
+- Clean project :: =make clean= removes artifacts, =make clean-venv= removes virtual environment
 - Org tangle :: =make tangle= extracts code blocks from org files
 - Org detangle :: Manual process using Emacs org-babel-detangle function
 
+* Build System Dependencies
+The Makefile uses file-level dependencies to manage the build process:
+- =README.md= is generated from =README.org= and is gitignored
+- =.venv= depends on =README.md= and =pyproject.toml=
+- All framework targets depend on =.venv=
+- All commands that need Python automatically activate the venv
+
 * Code Style Guidelines
+- Python version :: 3.11 (specified in pyproject.toml)
 - Imports :: Use absolute imports, group (stdlib, third-party, local) with a blank line between groups
 - Formatting :: Follow PEP 8, use 4-space indentation
 - Types :: Use type hints for function parameters and return values (Pydantic models preferred)

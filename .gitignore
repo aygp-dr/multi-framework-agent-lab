@@ -68,4 +68,8 @@ htmlcov/
 \#*\#
 .\#*
 
+# Generated files
+README.md
+README.html
+
 **/.claude/settings.local.json
