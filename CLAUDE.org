@@ -4,12 +4,13 @@
 #+PROPERTY: header-args :mkdirp yes :session *Python* :results output
 
 * Build/Test/Lint Commands
+- Virtual env :: =make .venv= creates environment, =make activate= shows activation command
 - Run agent :: =make framework-{framework_name}= or =python -m agents.{framework_name}.run=
 - Test all :: =make test= or =pytest tests/=
 - Test single :: =pytest tests/test_file.py::test_function=
 - Compare all :: =make compare= or =python -m evaluation.compare_all=
-- Clean project :: =make clean=
-- Setup :: =make setup= or =pip install -r requirements.txt=
+- Clean project :: =make clean= for artifacts, =make clean-venv= to remove virtual environment
+- Setup :: =make setup= (creates venv and installs deps) or =uv pip install -r requirements.txt=
 
 * Code Style Guidelines
 - Imports :: Use absolute imports, group (stdlib, third-party, local) with a blank line between groups
