@@ -1,0 +1,162 @@
+# README.org
+
+#+TITLE: Multi-Framework Agent Lab
+#+AUTHOR: AYGP-DR
+#+DATE: [2025-05-20]
+#+OPTIONS: toc:3 num:nil
+#+PROPERTY: header-args :eval never
+
+* Overview
+
+This repository implements the same AI agent across multiple Python frameworks to compare their developer experience, code complexity, and performance. The project was inspired by a [[https://www.reddit.com/r/LLMDevs/comments/1kqfaf4/i_have_written_the_same_ai_agent_in_9_different/][Reddit post]] where a developer compared different agent frameworks.
+
+* Motivation
+
+The landscape of AI agent frameworks is rapidly evolving, with multiple competing options available. Each framework offers its own approach to:
+
+- Tool calling
+- State management
+- Memory handling
+- Prompt construction
+- Error handling
+- Developer experience
+
+By implementing the same agent with identical functionality across different frameworks, we can directly compare:
+
+1. Implementation complexity
+2. Code readability and maintainability
+3. Performance metrics (latency, token usage)
+4. Developer experience
+5. Framework documentation quality
+
+* Frameworks Implemented
+
+| Framework               | Status      | Implementation Time | Notes                             |
+|-------------------------+-------------+---------------------+-----------------------------------|
+| No Framework (baseline) | Implemented | ~30 min             | Simple but requires boilerplate   |
+| LangGraph (functional)  | Implemented | ~30 min             | State machine approach            |
+| LangGraph (high-level)  | Planned     | -                   | Higher level abstraction          |
+| Pydantic AI             | Planned     | -                   | Good for structured data          |
+| Google ADK              | Planned     | -                   | Google's Agent Development Kit    |
+| Inspect AI              | Planned     | -                   | Focus on evaluation               |
+| DSPy                    | Planned     | -                   | LLM programming paradigm          |
+| Smolagents              | Planned     | -                   | Focus on small models             |
+| Agno                    | Planned     | -                   | Interesting ReasoningTool concept |
+
+* Installation
+
+** Clone the repository
+#+BEGIN_SRC bash
+git clone https://github.com/yourusername/multi-framework-agent-lab.git
+cd multi-framework-agent-lab
+#+END_SRC
+
+** Set up virtual environment
+#+BEGIN_SRC bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+#+END_SRC
+
+** Install dependencies
+#+BEGIN_SRC bash
+pip install -r requirements.txt
+#+END_SRC
+
+** Configure API keys
+Create a =.env= file in the root directory:
+
+#+BEGIN_SRC conf
+OPENAI_API_KEY=your_openai_api_key
+GOOGLE_API_KEY=your_google_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+#+END_SRC
+
+* Usage
+
+** Run the comparison
+#+BEGIN_SRC bash
+make compare
+#+END_SRC
+
+** Run a specific agent
+#+BEGIN_SRC bash
+# For the no-framework implementation
+make framework-no-framework
+
+# For LangGraph's functional API implementation
+make framework-langgraph-functional
+
+# Or run directly with Python
+python -m agents.no_framework.run
+python -m agents.langgraph_functional.run
+#+END_SRC
+
+* Project Structure
+
+#+BEGIN_SRC
+multi-framework-agent-lab/
+├── agents/                  # Agent implementations
+│   ├── agno/                # Agno framework implementation
+│   ├── base_agent.py        # Base agent interface
+│   ├── dspy/                # DSPy framework implementation
+│   ├── google_adk/          # Google ADK framework implementation
+│   ├── inspect_ai/          # Inspect AI framework implementation
+│   ├── langgraph_functional/ # LangGraph (functional API) implementation
+│   ├── langgraph_high_level/ # LangGraph (high level API) implementation
+│   ├── no_framework/        # Implementation without a framework
+│   ├── pydantic_ai/         # Pydantic AI framework implementation
+│   └── smolagents/          # Smolagents framework implementation
+├── common/                  # Shared utilities
+│   ├── llm.py               # LLM client wrapper
+│   ├── schema.py            # Common data structures
+│   ├── tools.py             # Tool implementations
+│   └── utils.py             # Utility functions
+├── docs/                    # Documentation
+├── evaluation/              # Evaluation scripts
+│   ├── compare_all.py       # Comparison script
+│   └── results/             # Evaluation results
+├── notebooks/               # Jupyter notebooks
+├── tests/                   # Test suite
+├── .env                     # Environment variables (not in repo)
+├── .gitignore               # Git ignore file
+├── Makefile                 # Project commands
+├── README.org               # This file
+├── requirements.txt         # Project dependencies
+└── SETUP.org                # Setup instructions with org-mode tangling
+#+END_SRC
+
+* Agent Task Description
+
+The agent implements a simple task with three tools:
+
+1. =get_weather=: Get weather information for a location
+2. =search_knowledge_base=: Search a knowledge base for information
+3. =calculate=: Evaluate a mathematical expression
+
+This simple set of tools allows us to test:
+- Basic tool calling
+- Parameter passing
+- Result handling
+- Conversation state management
+
+* Contributing
+
+1. Fork the repository
+2. Create a new branch for your implementation
+3. Add an implementation in the framework of your choice
+4. Update the evaluation scripts to include your implementation
+5. Submit a pull request
+
+** Adding a new framework
+
+To add a new framework:
+
+1. Create a new directory under =/agents/your_framework_name/=
+2. Implement the =BaseAgent= interface
+3. Add a =run.py= script to test the agent
+4. Update the Makefile with a new target
+5. Add your framework to the evaluation script
+
+* License
+
+MIT

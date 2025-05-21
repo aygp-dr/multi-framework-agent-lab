@@ -1,0 +1,1714 @@
+# SETUP.org
+
+#+TITLE: Multi-Framework Agent Lab Setup
+#+AUTHOR: AYGP-DR
+#+DATE: [2025-05-20]
+#+PROPERTY: header-args :mkdirp yes
+
+* Introduction
+
+This file automates the setup of a lab environment for implementing and comparing the same AI agent across multiple Python frameworks, inspired by the GitHub repository comparison shared on Reddit.
+
+* Directory Structure
+:PROPERTIES:
+:header-args: :tangle no
+:END:
+
+#+BEGIN_SRC mermaid :file docs/structure.svg
+graph TD
+    A[multi-framework-agent-lab] --> B[agents]
+    A --> C[common]
+    A --> D[tests]
+    A --> E[docs]
+    A --> F[notebooks]
+    A --> G[evaluation]
+    B --> B1[agno]
+    B --> B2[dspy]
+    B --> B3[google_adk]
+    B --> B4[inspect_ai]
+    B --> B5[langgraph_functional]
+    B --> B6[langgraph_high_level]
+    B --> B7[pydantic_ai]
+    B --> B8[smolagents]
+    B --> B9[no_framework]
+    C --> C1[schema.py]
+    C --> C2[tools.py]
+    C --> C3[utils.py]
+#+END_SRC
+
+* Project Files
+
+** README.md
+:PROPERTIES:
+:header-args: :tangle README.md
+:END:
+
+#+BEGIN_SRC markdown
+# Multi-Framework Agent Lab
+
+This repository implements the same AI agent across 9 different Python frameworks to compare their developer experience, code complexity, and performance.
+
+## Frameworks Implemented
+
+- Agno
+- DSPy
+- Google ADK
+- Inspect AI
+- LangGraph (functional API)
+- LangGraph (high level API)
+- Pydantic AI
+- Smolagents
+- No framework (baseline implementation)
+
+## Getting Started
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the comparison
+make compare
+
+# Run a specific agent
+python -m agents.langgraph_functional.run
+```
+
+## Agent Task Description
+
+The agent implements a simple task: [description of the agent's functionality].
+
+## Framework Comparison
+
+| Framework | Implementation Time | Code Complexity | Performance | Notes |
+|-----------|---------------------|-----------------|-------------|-------|
+| No Framework | | | | |
+| LangGraph (functional) | | | | |
+| LangGraph (high-level) | | | | |
+| Pydantic AI | | | | |
+| Google ADK | | | | |
+| Inspect AI | | | | |
+| DSPy | | | | |
+| Smolagents | | | | |
+| Agno | | | | |
+
+## License
+
+MIT
+#+END_SRC
+
+** .gitignore
+:PROPERTIES:
+:header-args: :tangle .gitignore
+:END:
+
+#+BEGIN_SRC text
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# API keys and secrets
+*.pem
+*.key
+keys.json
+secrets.json
+
+# Test artifacts
+.coverage
+htmlcov/
+#+END_SRC
+
+** requirements.txt
+:PROPERTIES:
+:header-args: :tangle requirements.txt
+:END:
+
+#+BEGIN_SRC text
+# Core requirements
+python-dotenv==1.0.0
+pydantic==2.5.2
+litellm==1.10.0
+pytest==7.4.3
+jupyter==1.0.0
+matplotlib==3.8.2
+pandas==2.1.3
+
+# Framework-specific
+langchain==0.1.0
+langgraph==0.1.0
+dspy-ai==2.3.0
+google-adk==0.0.2
+inspect-ai==1.0.0
+smolagents==0.1.0
+pydantic-ai==0.1.0
+agno==0.1.0
+#+END_SRC
+
+** Makefile
+:PROPERTIES:
+:header-args: :tangle Makefile
+:END:
+
+#+BEGIN_SRC makefile
+.PHONY: setup test compare clean all
+
+all: setup test compare
+
+setup:
+	pip install -r requirements.txt
+
+test:
+	pytest tests/
+
+compare:
+	python -m evaluation.compare_all
+
+clean:
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
+	find . -type f -name "*.pyo" -delete
+	find . -type f -name "*.pyd" -delete
+	find . -type f -name ".coverage" -delete
+	find . -type d -name "htmlcov" -exec rm -rf {} +
+	find . -type d -name "dist" -exec rm -rf {} +
+	find . -type d -name "build" -exec rm -rf {} +
+	find . -type d -name "*.egg-info" -exec rm -rf {} +
+
+framework-agno:
+	python -m agents.agno.run
+
+framework-dspy:
+	python -m agents.dspy.run
+
+framework-google-adk:
+	python -m agents.google_adk.run
+
+framework-inspect-ai:
+	python -m agents.inspect_ai.run
+
+framework-langgraph-functional:
+	python -m agents.langgraph_functional.run
+
+framework-langgraph-high-level:
+	python -m agents.langgraph_high_level.run
+
+framework-pydantic-ai:
+	python -m agents.pydantic_ai.run
+
+framework-smolagents:
+	python -m agents.smolagents.run
+
+framework-no-framework:
+	python -m agents.no_framework.run
+#+END_SRC
+
+* Common Utilities
+
+** Common Schema
+:PROPERTIES:
+:header-args: :tangle common/schema.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Common schemas for agent inputs and outputs to ensure consistent comparison.
+"""
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
+
+
+class UserMessage(BaseModel):
+    """User message to the agent."""
+    content: str = Field(..., description="The content of the message")
+    
+
+class ToolCall(BaseModel):
+    """A tool call made by the agent."""
+    tool_name: str = Field(..., description="The name of the tool to call")
+    tool_input: Dict[str, Any] = Field(..., description="The input parameters for the tool")
+    
+
+class ToolResult(BaseModel):
+    """The result of a tool call."""
+    tool_name: str = Field(..., description="The name of the tool that was called")
+    result: Any = Field(..., description="The result of the tool call")
+    error: Optional[str] = Field(None, description="Error message if the tool call failed")
+
+
+class AgentResponse(BaseModel):
+    """The response from the agent to the user."""
+    content: str = Field(..., description="The content of the agent's response")
+    tool_calls: List[ToolCall] = Field(default_factory=list, description="Tool calls made by the agent")
+    
+
+class AgentConversation(BaseModel):
+    """A conversation between a user and an agent."""
+    messages: List[Dict[str, Any]] = Field(default_factory=list, description="Messages in the conversation")
+    
+
+class AgentMetrics(BaseModel):
+    """Metrics for evaluating agent performance."""
+    total_tokens: int = Field(0, description="Total tokens used")
+    execution_time: float = Field(0.0, description="Execution time in seconds")
+    tool_calls_count: int = Field(0, description="Number of tool calls made")
+    success_rate: float = Field(0.0, description="Success rate for completing tasks")
+    error_count: int = Field(0, description="Number of errors encountered")
+#+END_SRC
+
+** Common Tools
+:PROPERTIES:
+:header-args: :tangle common/tools.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Common tool implementations to be used across all agent frameworks.
+"""
+import json
+import math
+from typing import Dict, Any, List, Optional
+import os
+import datetime
+
+
+def get_weather(location: str) -> Dict[str, Any]:
+    """
+    Get the current weather for a location.
+    This is a mock implementation for demonstration purposes.
+    
+    Args:
+        location: The location to get weather for
+        
+    Returns:
+        Dict containing weather information
+    """
+    # Mock implementation
+    return {
+        "location": location,
+        "temperature": 72,
+        "conditions": "sunny",
+        "humidity": 45,
+        "wind_speed": 5,
+        "timestamp": datetime.datetime.now().isoformat()
+    }
+
+
+def search_knowledge_base(query: str, max_results: int = 3) -> List[Dict[str, Any]]:
+    """
+    Search a knowledge base for information.
+    This is a mock implementation for demonstration purposes.
+    
+    Args:
+        query: The search query
+        max_results: Maximum number of results to return
+        
+    Returns:
+        List of search results
+    """
+    # Mock implementation
+    results = [
+        {"title": "Sample article 1", "content": f"This is a sample article about {query}", "relevance": 0.95},
+        {"title": "Sample article 2", "content": f"Another article related to {query}", "relevance": 0.82},
+        {"title": "Sample article 3", "content": f"Additional information about {query}", "relevance": 0.67},
+        {"title": "Sample article 4", "content": f"Somewhat related to {query}", "relevance": 0.45},
+    ]
+    return results[:max_results]
+
+
+def calculate(expression: str) -> Dict[str, Any]:
+    """
+    Evaluate a mathematical expression.
+    
+    Args:
+        expression: The expression to evaluate
+        
+    Returns:
+        Dict containing the result or error
+    """
+    try:
+        # Safe evaluation using math module
+        # This is a simplified version and not secure for production use
+        allowed_names = {
+            k: v for k, v in math.__dict__.items() 
+            if not k.startswith('__')
+        }
+        
+        # Add basic operations
+        allowed_names.update({
+            'abs': abs,
+            'round': round,
+            'min': min,
+            'max': max,
+        })
+        
+        result = eval(expression, {"__builtins__": {}}, allowed_names)
+        return {
+            "expression": expression,
+            "result": result,
+            "error": None
+        }
+    except Exception as e:
+        return {
+            "expression": expression,
+            "result": None,
+            "error": str(e)
+        }
+
+
+# Dictionary mapping tool names to their implementations
+TOOLS = {
+    "get_weather": get_weather,
+    "search_knowledge_base": search_knowledge_base,
+    "calculate": calculate,
+}
+
+
+def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Execute a tool by name with the provided input.
+    
+    Args:
+        tool_name: The name of the tool to execute
+        tool_input: The input parameters for the tool
+        
+    Returns:
+        The result of the tool execution
+    """
+    if tool_name not in TOOLS:
+        return {
+            "error": f"Tool not found: {tool_name}",
+            "result": None
+        }
+    
+    try:
+        tool_func = TOOLS[tool_name]
+        result = tool_func(**tool_input)
+        return {
+            "error": None,
+            "result": result
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "result": None
+        }
+#+END_SRC
+
+** Common Utils
+:PROPERTIES:
+:header-args: :tangle common/utils.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Utility functions for the multi-framework agent lab.
+"""
+import json
+import time
+import os
+from typing import Dict, Any, List, Optional, Callable
+import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+
+def time_execution(func: Callable) -> Callable:
+    """
+    Decorator to measure execution time of a function.
+    
+    Args:
+        func: The function to measure
+        
+    Returns:
+        Wrapper function that times execution
+    """
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        
+        execution_time = end_time - start_time
+        print(f"Execution time for {func.__name__}: {execution_time:.4f} seconds")
+        
+        # Add execution time to result if it's a dict
+        if isinstance(result, dict):
+            result["execution_time"] = execution_time
+            
+        return result
+    return wrapper
+
+
+def load_json_file(file_path: str) -> Dict[str, Any]:
+    """
+    Load a JSON file.
+    
+    Args:
+        file_path: Path to the JSON file
+        
+    Returns:
+        The loaded JSON data
+    """
+    try:
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading JSON file {file_path}: {e}")
+        return {}
+        
+        
+def save_json_file(data: Dict[str, Any], file_path: str) -> bool:
+    """
+    Save data to a JSON file.
+    
+    Args:
+        data: The data to save
+        file_path: Path to save the JSON file
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving JSON file {file_path}: {e}")
+        return False
+
+
+def convert_to_openai_messages(conversation: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Convert internal message format to OpenAI message format.
+    
+    Args:
+        conversation: List of messages in internal format
+        
+    Returns:
+        List of messages in OpenAI format
+    """
+    openai_messages = []
+    
+    for msg in conversation:
+        if msg.get("type") == "system":
+            openai_messages.append({
+                "role": "system",
+                "content": msg.get("content", "")
+            })
+        elif msg.get("type") == "user":
+            openai_messages.append({
+                "role": "user",
+                "content": msg.get("content", "")
+            })
+        elif msg.get("type") == "assistant":
+            assistant_msg = {
+                "role": "assistant",
+                "content": msg.get("content", "")
+            }
+            
+            # Add tool calls if present
+            if "tool_calls" in msg and msg["tool_calls"]:
+                assistant_msg["tool_calls"] = [
+                    {
+                        "id": f"call_{i}",
+                        "type": "function",
+                        "function": {
+                            "name": tc["tool_name"],
+                            "arguments": json.dumps(tc["tool_input"])
+                        }
+                    }
+                    for i, tc in enumerate(msg["tool_calls"])
+                ]
+                
+            openai_messages.append(assistant_msg)
+        elif msg.get("type") == "tool":
+            openai_messages.append({
+                "role": "tool",
+                "tool_call_id": msg.get("tool_call_id", "call_0"),
+                "content": json.dumps(msg.get("content", {}))
+            })
+            
+    return openai_messages
+#+END_SRC
+
+** Common LLM Wrapper
+:PROPERTIES:
+:header-args: :tangle common/llm.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Common LLM client wrapper to ensure consistent access across frameworks.
+"""
+import os
+import json
+from typing import Dict, Any, List, Optional, Union
+from dotenv import load_dotenv
+import litellm
+
+# Load environment variables
+load_dotenv()
+
+# Initialize LiteLLM
+litellm.api_key = os.getenv("OPENAI_API_KEY", "")
+litellm.set_verbose = True if os.getenv("DEBUG", "False").lower() == "true" else False
+
+# Default model to use (can be overridden)
+DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4-turbo")
+
+
+class LLMClient:
+    """
+    Wrapper around LiteLLM for consistent LLM access.
+    """
+    
+    def __init__(self, model: str = None, temperature: float = 0.7):
+        """
+        Initialize the LLM client.
+        
+        Args:
+            model: The LLM model to use
+            temperature: Temperature for LLM sampling
+        """
+        self.model = model or DEFAULT_MODEL
+        self.temperature = temperature
+        
+    def complete(self, 
+                messages: List[Dict[str, Any]], 
+                tools: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+        """
+        Complete a conversation with the LLM.
+        
+        Args:
+            messages: List of messages in the conversation
+            tools: List of tools available to the LLM
+            
+        Returns:
+            LLM response
+        """
+        try:
+            response = litellm.completion(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                tools=tools,
+                tool_choice="auto" if tools else None
+            )
+            return response
+        except Exception as e:
+            print(f"Error calling LLM: {e}")
+            # Return a minimal error response
+            return {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": f"Error: Unable to get a response from the LLM. {str(e)}"
+                        }
+                    }
+                ],
+                "error": str(e)
+            }
+
+    def stream_complete(self, 
+                       messages: List[Dict[str, Any]], 
+                       tools: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+        """
+        Stream a completion from the LLM.
+        
+        Args:
+            messages: List of messages in the conversation
+            tools: List of tools available to the LLM
+            
+        Returns:
+            Generator yielding LLM response chunks
+        """
+        try:
+            response = litellm.completion(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                tools=tools,
+                tool_choice="auto" if tools else None,
+                stream=True
+            )
+            return response
+        except Exception as e:
+            print(f"Error streaming from LLM: {e}")
+            # Return a minimal error response that mimics the stream format
+            def error_generator():
+                yield {
+                    "choices": [
+                        {
+                            "delta": {
+                                "role": "assistant",
+                                "content": f"Error: Unable to get a response from the LLM. {str(e)}"
+                            }
+                        }
+                    ],
+                    "error": str(e)
+                }
+            return error_generator()
+#+END_SRC
+
+* Agent Implementations
+
+** Base Agent
+:PROPERTIES:
+:header-args: :tangle agents/base_agent.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Base agent interface that all implementations must follow.
+"""
+from abc import ABC, abstractmethod
+from typing import Dict, Any, List, Optional, Union
+from common.schema import UserMessage, AgentResponse, AgentMetrics
+
+
+class BaseAgent(ABC):
+    """
+    Abstract base class for all agent implementations.
+    """
+    
+    @abstractmethod
+    def initialize(self) -> None:
+        """
+        Initialize the agent with any necessary setup.
+        """
+        pass
+    
+    @abstractmethod
+    def process(self, user_message: UserMessage) -> AgentResponse:
+        """
+        Process a user message and return a response.
+        
+        Args:
+            user_message: The user message to process
+            
+        Returns:
+            Agent's response
+        """
+        pass
+    
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        Reset the agent's state.
+        """
+        pass
+    
+    @abstractmethod
+    def get_metrics(self) -> AgentMetrics:
+        """
+        Get metrics about the agent's performance.
+        
+        Returns:
+            AgentMetrics object with performance data
+        """
+        pass
+#+END_SRC
+
+** No Framework Agent
+:PROPERTIES:
+:header-args: :tangle agents/no_framework/agent.py
+:END:
+
+#+BEGIN_SRC python
+"""
+No framework baseline implementation of the agent.
+"""
+import json
+import time
+from typing import Dict, Any, List, Optional, Union
+
+from common.schema import UserMessage, AgentResponse, AgentMetrics, ToolCall
+from common.tools import execute_tool
+from common.llm import LLMClient
+from agents.base_agent import BaseAgent
+
+
+class NoFrameworkAgent(BaseAgent):
+    """
+    Implementation of an agent using no framework, just raw LLM calls.
+    """
+    
+    def __init__(self, model: str = None):
+        """
+        Initialize the agent.
+        
+        Args:
+            model: The LLM model to use
+        """
+        self.llm = LLMClient(model=model)
+        self.messages = []
+        self.system_prompt = """
+        You are a helpful assistant with access to the following tools:
+        
+        - get_weather: Get the current weather for a location
+        - search_knowledge_base: Search a knowledge base for information
+        - calculate: Evaluate a mathematical expression
+        
+        Use these tools when needed to provide accurate and helpful responses.
+        """
+        self.tool_definitions = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "description": "Get the current weather for a location",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "location": {
+                                "type": "string",
+                                "description": "The location to get weather for"
+                            }
+                        },
+                        "required": ["location"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_knowledge_base",
+                    "description": "Search a knowledge base for information",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The search query"
+                            },
+                            "max_results": {
+                                "type": "integer",
+                                "description": "Maximum number of results to return"
+                            }
+                        },
+                        "required": ["query"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "calculate",
+                    "description": "Evaluate a mathematical expression",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "expression": {
+                                "type": "string",
+                                "description": "The expression to evaluate"
+                            }
+                        },
+                        "required": ["expression"]
+                    }
+                }
+            }
+        ]
+        
+        # Metrics
+        self.total_tokens = 0
+        self.start_time = time.time()
+        self.tool_calls_count = 0
+        self.error_count = 0
+        
+    def initialize(self) -> None:
+        """
+        Initialize the agent.
+        """
+        self.messages = [
+            {"role": "system", "content": self.system_prompt}
+        ]
+    
+    def process(self, user_message: UserMessage) -> AgentResponse:
+        """
+        Process a user message and return a response.
+        
+        Args:
+            user_message: The user message to process
+            
+        Returns:
+            Agent's response
+        """
+        # Add user message to history
+        self.messages.append({"role": "user", "content": user_message.content})
+        
+        # Process the conversation
+        MAX_ITERATIONS = 10
+        iteration = 0
+        final_content = ""
+        tool_calls = []
+        
+        while iteration < MAX_ITERATIONS:
+            try:
+                # Get LLM response
+                response = self.llm.complete(
+                    messages=self.messages,
+                    tools=self.tool_definitions
+                )
+                
+                # Update token count from response if available
+                if hasattr(response, "usage") and response.usage:
+                    self.total_tokens += response.usage.total_tokens
+                
+                # Extract assistant message
+                assistant_message = response.choices[0].message
+                
+                # Add to conversation history
+                self.messages.append(assistant_message)
+                
+                # Check if tool calls are required
+                if hasattr(assistant_message, "tool_calls") and assistant_message.tool_calls:
+                    self.tool_calls_count += len(assistant_message.tool_calls)
+                    
+                    # Process each tool call
+                    for tool_call in assistant_message.tool_calls:
+                        function_name = tool_call.function.name
+                        function_args = json.loads(tool_call.function.arguments)
+                        
+                        # Record the tool call
+                        tool_calls.append(ToolCall(
+                            tool_name=function_name,
+                            tool_input=function_args
+                        ))
+                        
+                        # Execute the tool
+                        tool_result = execute_tool(function_name, function_args)
+                        
+                        # Add tool result to conversation
+                        self.messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps(tool_result)
+                        })
+                    
+                    # Continue to next iteration
+                    iteration += 1
+                    continue
+                
+                # If no tool calls, we're done
+                final_content = assistant_message.content
+                break
+                
+            except Exception as e:
+                self.error_count += 1
+                print(f"Error in agent processing: {e}")
+                final_content = f"Error: {str(e)}"
+                break
+            
+            iteration += 1
+        
+        # Return the final response
+        return AgentResponse(
+            content=final_content,
+            tool_calls=tool_calls
+        )
+    
+    def reset(self) -> None:
+        """
+        Reset the agent's state.
+        """
+        self.messages = [
+            {"role": "system", "content": self.system_prompt}
+        ]
+        
+    def get_metrics(self) -> AgentMetrics:
+        """
+        Get metrics about the agent's performance.
+        
+        Returns:
+            AgentMetrics object with performance data
+        """
+        execution_time = time.time() - self.start_time
+        
+        return AgentMetrics(
+            total_tokens=self.total_tokens,
+            execution_time=execution_time,
+            tool_calls_count=self.tool_calls_count,
+            success_rate=1.0 if self.error_count == 0 else (1.0 - (self.error_count / self.tool_calls_count if self.tool_calls_count > 0 else 1.0)),
+            error_count=self.error_count
+        )
+#+END_SRC
+
+** No Framework Run
+:PROPERTIES:
+:header-args: :tangle agents/no_framework/run.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Run script for the no-framework agent implementation.
+"""
+import sys
+import os
+import json
+from typing import Dict, Any, List
+
+# Add parent directory to path to allow imports
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+sys.path.append(parent_dir)
+
+from common.schema import UserMessage
+from agents.no_framework.agent import NoFrameworkAgent
+
+
+def main():
+    """
+    Main function to run the agent.
+    """
+    # Create and initialize the agent
+    agent = NoFrameworkAgent()
+    agent.initialize()
+    
+    print("\nNo-Framework Agent")
+    print("=================")
+    print("Type 'exit' to quit")
+    print()
+    
+    while True:
+        # Get user input
+        user_input = input("User: ")
+        
+        if user_input.lower() in ["exit", "quit", "q"]:
+            break
+        
+        # Process user input
+        user_message = UserMessage(content=user_input)
+        response = agent.process(user_message)
+        
+        # Display response
+        print("\nAssistant:", response.content)
+        
+        # Display tool calls if any
+        if response.tool_calls:
+            print("\nTool Calls:")
+            for i, tool_call in enumerate(response.tool_calls):
+                print(f"  {i+1}. {tool_call.tool_name}({json.dumps(tool_call.tool_input, indent=2)})")
+        
+        print()
+    
+    # Display metrics at the end
+    metrics = agent.get_metrics()
+    print("\nAgent Metrics:")
+    print(f"  Total tokens: {metrics.total_tokens}")
+    print(f"  Execution time: {metrics.execution_time:.2f} seconds")
+    print(f"  Tool calls count: {metrics.tool_calls_count}")
+    print(f"  Success rate: {metrics.success_rate:.2%}")
+    print(f"  Error count: {metrics.error_count}")
+
+
+if __name__ == "__main__":
+    main()
+#+END_SRC
+
+** Example LangGraph Implementation
+:PROPERTIES:
+:header-args: :tangle agents/langgraph_functional/agent.py
+:END:
+
+#+BEGIN_SRC python
+"""
+LangGraph (functional API) implementation of the agent.
+"""
+import json
+import time
+from typing import Dict, Any, List, Optional, Union, TypedDict, Annotated
+
+from common.schema import UserMessage, AgentResponse, AgentMetrics, ToolCall
+from common.tools import execute_tool
+from common.llm import LLMClient
+from agents.base_agent import BaseAgent
+
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import create_react_agent
+
+
+# Define state for the graph
+class AgentState(TypedDict):
+    messages: List[Dict[str, Any]]
+    tool_calls: List[Dict[str, Any]]
+    current_tool_call: Optional[Dict[str, Any]]
+    current_tool_result: Optional[Dict[str, Any]]
+    response: Optional[str]
+
+
+class LangGraphFunctionalAgent(BaseAgent):
+    """
+    Implementation of an agent using LangGraph's functional API.
+    """
+    
+    def __init__(self, model: str = None):
+        """
+        Initialize the agent.
+        
+        Args:
+            model: The LLM model to use
+        """
+        self.llm = LLMClient(model=model)
+        self.messages = []
+        self.system_prompt = """
+        You are a helpful assistant with access to the following tools:
+        
+        - get_weather: Get the current weather for a location
+        - search_knowledge_base: Search a knowledge base for information
+        - calculate: Evaluate a mathematical expression
+        
+        Use these tools when needed to provide accurate and helpful responses.
+        """
+        self.tool_definitions = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "description": "Get the current weather for a location",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "location": {
+                                "type": "string",
+                                "description": "The location to get weather for"
+                            }
+                        },
+                        "required": ["location"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_knowledge_base",
+                    "description": "Search a knowledge base for information",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The search query"
+                            },
+                            "max_results": {
+                                "type": "integer",
+                                "description": "Maximum number of results to return"
+                            }
+                        },
+                        "required": ["query"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "calculate",
+                    "description": "Evaluate a mathematical expression",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "expression": {
+                                "type": "string",
+                                "description": "The expression to evaluate"
+                            }
+                        },
+                        "required": ["expression"]
+                    }
+                }
+            }
+        ]
+        
+        # Set up the LangGraph agent
+        self._setup_graph()
+        
+        # Metrics
+        self.total_tokens = 0
+        self.start_time = time.time()
+        self.tool_calls_count = 0
+        self.error_count = 0
+        
+    def _setup_graph(self):
+        """
+        Set up the LangGraph agent.
+        """
+        # Define available tools
+        tools = {
+            "get_weather": lambda params: execute_tool("get_weather", params),
+            "search_knowledge_base": lambda params: execute_tool("search_knowledge_base", params),
+            "calculate": lambda params: execute_tool("calculate", params)
+        }
+        
+        # Create the agent
+        self.agent = create_react_agent(
+            llm=self.llm,
+            tools=tools,
+            system_prompt=self.system_prompt
+        )
+        
+        # Define the state graph
+        builder = StateGraph(AgentState)
+        
+        # Add the agent node
+        builder.add_node("agent", self.agent)
+        
+        # Define edges
+        builder.add_edge("agent", END)
+        
+        # Compile the graph
+        self.graph = builder.compile()
+        
+    def initialize(self) -> None:
+        """
+        Initialize the agent.
+        """
+        self.messages = [
+            {"role": "system", "content": self.system_prompt}
+        ]
+    
+    def process(self, user_message: UserMessage) -> AgentResponse:
+        """
+        Process a user message and return a response.
+        
+        Args:
+            user_message: The user message to process
+            
+        Returns:
+            Agent's response
+        """
+        # Add user message to history
+        self.messages.append({"role": "user", "content": user_message.content})
+        
+        # Run the graph
+        try:
+            # Initialize graph state
+            state = AgentState(
+                messages=self.messages.copy(),
+                tool_calls=[],
+                current_tool_call=None,
+                current_tool_result=None,
+                response=None
+            )
+            
+            # Execute the graph
+            result = self.graph.invoke(state)
+            
+            # Extract final messages
+            final_messages = result["messages"]
+            self.messages = final_messages
+            
+            # Extract tool calls
+            tool_calls_list = []
+            for msg in final_messages:
+                if msg.get("role") == "assistant" and "tool_calls" in msg:
+                    for tc in msg["tool_calls"]:
+                        self.tool_calls_count += 1
+                        tool_calls_list.append(ToolCall(
+                            tool_name=tc["function"]["name"],
+                            tool_input=json.loads(tc["function"]["arguments"])
+                        ))
+            
+            # Find the final assistant message
+            final_content = ""
+            for msg in reversed(final_messages):
+                if msg.get("role") == "assistant" and msg.get("content"):
+                    final_content = msg["content"]
+                    break
+            
+            return AgentResponse(
+                content=final_content,
+                tool_calls=tool_calls_list
+            )
+            
+        except Exception as e:
+            self.error_count += 1
+            print(f"Error in LangGraph agent processing: {e}")
+            return AgentResponse(
+                content=f"Error: {str(e)}",
+                tool_calls=[]
+            )
+    
+    def reset(self) -> None:
+        """
+        Reset the agent's state.
+        """
+        self.messages = [
+            {"role": "system", "content": self.system_prompt}
+        ]
+        
+    def get_metrics(self) -> AgentMetrics:
+        """
+        Get metrics about the agent's performance.
+        
+        Returns:
+            AgentMetrics object with performance data
+        """
+        execution_time = time.time() - self.start_time
+        
+        return AgentMetrics(
+            total_tokens=self.total_tokens,
+            execution_time=execution_time,
+            tool_calls_count=self.tool_calls_count,
+            success_rate=1.0 if self.error_count == 0 else (1.0 - (self.error_count / self.tool_calls_count if self.tool_calls_count > 0 else 1.0)),
+            error_count=self.error_count
+        )
+#+END_SRC
+
+** LangGraph Run
+:PROPERTIES:
+:header-args: :tangle agents/langgraph_functional/run.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Run script for the LangGraph functional agent implementation.
+"""
+import sys
+import os
+import json
+from typing import Dict, Any, List
+
+# Add parent directory to path to allow imports
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+sys.path.append(parent_dir)
+
+from common.schema import UserMessage
+from agents.langgraph_functional.agent import LangGraphFunctionalAgent
+
+
+def main():
+    """
+    Main function to run the agent.
+    """
+    # Create and initialize the agent
+    agent = LangGraphFunctionalAgent()
+    agent.initialize()
+    
+    print("\nLangGraph (Functional API) Agent")
+    print("===============================")
+    print("Type 'exit' to quit")
+    print()
+    
+    while True:
+        # Get user input
+        user_input = input("User: ")
+        
+        if user_input.lower() in ["exit", "quit", "q"]:
+            break
+        
+        # Process user input
+        user_message = UserMessage(content=user_input)
+        response = agent.process(user_message)
+        
+        # Display response
+        print("\nAssistant:", response.content)
+        
+        # Display tool calls if any
+        if response.tool_calls:
+            print("\nTool Calls:")
+            for i, tool_call in enumerate(response.tool_calls):
+                print(f"  {i+1}. {tool_call.tool_name}({json.dumps(tool_call.tool_input, indent=2)})")
+        
+        print()
+    
+    # Display metrics at the end
+    metrics = agent.get_metrics()
+    print("\nAgent Metrics:")
+    print(f"  Total tokens: {metrics.total_tokens}")
+    print(f"  Execution time: {metrics.execution_time:.2f} seconds")
+    print(f"  Tool calls count: {metrics.tool_calls_count}")
+    print(f"  Success rate: {metrics.success_rate:.2%}")
+    print(f"  Error count: {metrics.error_count}")
+
+
+if __name__ == "__main__":
+    main()
+#+END_SRC
+
+* Evaluation Scripts
+
+** Comparison Script
+:PROPERTIES:
+:header-args: :tangle evaluation/compare_all.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Script to compare all agent implementations.
+"""
+import sys
+import os
+import json
+import time
+import pandas as pd
+import matplotlib.pyplot as plt
+from typing import Dict, Any, List
+
+# Add parent directory to path to allow imports
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(parent_dir)
+
+from common.schema import UserMessage, AgentMetrics
+# Import all agent implementations
+from agents.no_framework.agent import NoFrameworkAgent
+from agents.langgraph_functional.agent import LangGraphFunctionalAgent
+
+# List of test queries to run against all agents
+TEST_QUERIES = [
+    "What's the weather like in Boston?",
+    "Can you calculate 345 * 892?",
+    "Search for information about artificial intelligence",
+    "What's 25% of 840?",
+    "Can you tell me about the capital of France and what the weather is like there right now?"
+]
+
+
+def run_comparison():
+    """
+    Run the comparison between all agent implementations.
+    """
+    # List of agent classes to test
+    agent_classes = [
+        ("No Framework", NoFrameworkAgent),
+        ("LangGraph (Functional)", LangGraphFunctionalAgent),
+        # Add other agent implementations as they are created
+    ]
+    
+    results = []
+    
+    for agent_name, agent_class in agent_classes:
+        print(f"\nTesting {agent_name} Agent")
+        print("="*40)
+        
+        # Create and initialize the agent
+        agent = agent_class()
+        agent.initialize()
+        
+        # Track metrics for this agent
+        agent_metrics = {
+            "name": agent_name,
+            "execution_times": [],
+            "token_counts": [],
+            "tool_calls": [],
+            "errors": [],
+            "responses": []
+        }
+        
+        # Run each test query
+        for i, query in enumerate(TEST_QUERIES):
+            print(f"\nQuery {i+1}: {query}")
+            
+            # Process the query
+            start_time = time.time()
+            user_message = UserMessage(content=query)
+            response = agent.process(user_message)
+            
+            # Record time
+            query_time = time.time() - start_time
+            agent_metrics["execution_times"].append(query_time)
+            
+            # Display and record response
+            print(f"Response: {response.content[:100]}...")
+            agent_metrics["responses"].append({
+                "query": query,
+                "response": response.content,
+                "tool_calls": [tc.dict() for tc in response.tool_calls]
+            })
+            
+            # Get updated metrics
+            metrics = agent.get_metrics()
+            
+            # Record metrics
+            agent_metrics["token_counts"].append(metrics.total_tokens)
+            agent_metrics["tool_calls"].append(metrics.tool_calls_count)
+            agent_metrics["errors"].append(metrics.error_count)
+            
+            # Reset agent for next query
+            agent.reset()
+        
+        # Calculate aggregate metrics
+        avg_execution_time = sum(agent_metrics["execution_times"]) / len(agent_metrics["execution_times"])
+        total_tokens = agent_metrics["token_counts"][-1]  # Last recorded value
+        total_tool_calls = agent_metrics["tool_calls"][-1]  # Last recorded value
+        total_errors = agent_metrics["errors"][-1]  # Last recorded value
+        
+        # Add to results
+        results.append({
+            "name": agent_name,
+            "avg_execution_time": avg_execution_time,
+            "total_tokens": total_tokens,
+            "total_tool_calls": total_tool_calls,
+            "total_errors": total_errors,
+            "detailed_metrics": agent_metrics
+        })
+        
+        print(f"\n{agent_name} Agent Summary:")
+        print(f"  Average execution time: {avg_execution_time:.2f} seconds")
+        print(f"  Total tokens: {total_tokens}")
+        print(f"  Total tool calls: {total_tool_calls}")
+        print(f"  Total errors: {total_errors}")
+    
+    # Save detailed results
+    os.makedirs("evaluation/results", exist_ok=True)
+    with open("evaluation/results/comparison_results.json", "w") as f:
+        json.dump(results, f, indent=2)
+    
+    # Create comparison charts
+    create_comparison_charts(results)
+    
+    return results
+
+
+def create_comparison_charts(results: List[Dict[str, Any]]):
+    """
+    Create comparison charts from the results.
+    
+    Args:
+        results: List of agent results
+    """
+    # Extract data for charts
+    names = [r["name"] for r in results]
+    exec_times = [r["avg_execution_time"] for r in results]
+    tokens = [r["total_tokens"] for r in results]
+    tool_calls = [r["total_tool_calls"] for r in results]
+    errors = [r["total_errors"] for r in results]
+    
+    # Create figure with multiple subplots
+    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+    fig.suptitle("Agent Framework Comparison", fontsize=16)
+    
+    # Execution time chart
+    axes[0, 0].bar(names, exec_times)
+    axes[0, 0].set_title("Average Execution Time (s)")
+    axes[0, 0].set_ylabel("Seconds")
+    axes[0, 0].grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Token usage chart
+    axes[0, 1].bar(names, tokens)
+    axes[0, 1].set_title("Total Tokens Used")
+    axes[0, 1].set_ylabel("Count")
+    axes[0, 1].grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Tool calls chart
+    axes[1, 0].bar(names, tool_calls)
+    axes[1, 0].set_title("Total Tool Calls")
+    axes[1, 0].set_ylabel("Count")
+    axes[1, 0].grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Errors chart
+    axes[1, 1].bar(names, errors)
+    axes[1, 1].set_title("Total Errors")
+    axes[1, 1].set_ylabel("Count")
+    axes[1, 1].grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Adjust layout
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    
+    # Save the figure
+    os.makedirs("evaluation/results", exist_ok=True)
+    plt.savefig("evaluation/results/comparison_charts.png")
+    
+
+def main():
+    """
+    Main function.
+    """
+    print("Running Agent Framework Comparison")
+    print("=================================")
+    
+    results = run_comparison()
+    
+    print("\nComparison complete! Results saved to evaluation/results/")
+
+
+if __name__ == "__main__":
+    main()
+#+END_SRC
+
+* Placeholder Directory Creators
+:PROPERTIES:
+:header-args: :tangle no
+:END:
+
+To ensure all directories are created, let's add placeholder files:
+
+#+BEGIN_SRC python :tangle agents/agno/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle agents/dspy/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle agents/google_adk/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle agents/inspect_ai/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle agents/langgraph_high_level/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle agents/pydantic_ai/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle agents/smolagents/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle tests/__init__.py
+# Placeholder to ensure directory creation
+#+END_SRC
+
+#+BEGIN_SRC python :tangle docs/README.md
+# Documentation
+
+This directory contains additional documentation for the Multi-Framework Agent Lab.
+#+END_SRC
+
+#+BEGIN_SRC python :tangle notebooks/README.md
+# Jupyter Notebooks
+
+This directory contains Jupyter notebooks for experimentation and visualization.
+#+END_SRC
+
+* Final Directory Structure Verification
+:PROPERTIES:
+:header-args: :tangle verification.py
+:END:
+
+#+BEGIN_SRC python
+"""
+Verify that all expected directories and files have been created.
+"""
+import os
+import sys
+
+def print_status(message, success):
+    """Print a status message with color."""
+    if success:
+        print(f"\033[92m✓ {message}\033[0m")
+    else:
+        print(f"\033[91m✗ {message}\033[0m")
+
+def verify_structure():
+    """
+    Verify that the expected directory structure exists.
+    """
+    expected_dirs = [
+        "agents",
+        "agents/no_framework",
+        "agents/langgraph_functional",
+        "agents/langgraph_high_level",
+        "agents/dspy",
+        "agents/google_adk",
+        "agents/inspect_ai",
+        "agents/pydantic_ai",
+        "agents/smolagents",
+        "agents/agno",
+        "common",
+        "tests",
+        "docs",
+        "notebooks",
+        "evaluation"
+    ]
+    
+    expected_files = [
+        "README.md",
+        "requirements.txt",
+        "Makefile",
+        ".gitignore",
+        "common/schema.py",
+        "common/tools.py",
+        "common/utils.py",
+        "common/llm.py",
+        "agents/base_agent.py",
+        "agents/no_framework/agent.py",
+        "agents/no_framework/run.py",
+        "agents/langgraph_functional/agent.py",
+        "agents/langgraph_functional/run.py",
+        "evaluation/compare_all.py"
+    ]
+    
+    success = True
+    
+    # Check directories
+    print("Checking directories...")
+    for dir_path in expected_dirs:
+        if os.path.isdir(dir_path):
+            print_status(f"Directory exists: {dir_path}", True)
+        else:
+            print_status(f"Directory missing: {dir_path}", False)
+            success = False
+    
+    # Check files
+    print("\nChecking files...")
+    for file_path in expected_files:
+        if os.path.isfile(file_path):
+            print_status(f"File exists: {file_path}", True)
+        else:
+            print_status(f"File missing: {file_path}", False)
+            success = False
+    
+    return success
+
+if __name__ == "__main__":
+    print("Multi-Framework Agent Lab Structure Verification")
+    print("==============================================")
+    
+    success = verify_structure()
+    
+    if success:
+        print("\n\033[92mAll expected directories and files exist!\033[0m")
+        sys.exit(0)
+    else:
+        print("\n\033[91mSome expected directories or files are missing.\033[0m")
+        sys.exit(1)
+#+END_SRC
