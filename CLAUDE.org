@@ -16,8 +16,7 @@
 
 * Build System Dependencies
 The Makefile uses file-level dependencies to manage the build process:
-- =README.md= is generated from =README.org= and is gitignored
-- =.venv= depends on =README.md= and =pyproject.toml=
+- =.venv= depends on =pyproject.toml=
 - All framework targets depend on =.venv=
 - =PYTHON= variable automatically activates venv and uses =uv run python=
 - All commands that use Python use the =PYTHON= variable

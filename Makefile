@@ -5,13 +5,8 @@ PYTHON=@. .venv/bin/activate && uv run python
 
 all: setup test compare
 
-# File-level dependency: README.md depends on README.org
-README.md: README.org
-	@echo "Converting README.org to README.md..."
-	@emacs --batch --eval "(require 'ox-md)" --eval "(find-file \"README.org\")" --eval "(org-md-export-to-markdown)" --kill
-
-# File-level dependency: .venv depends on README.md and pyproject.toml
-.venv: README.md pyproject.toml
+# File-level dependency: .venv depends on pyproject.toml
+.venv: pyproject.toml
 	@echo "Creating virtual environment with uv..."
 	@uv venv
 	@touch .venv
